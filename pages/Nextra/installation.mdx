@@ -1,0 +1,63 @@
+# Welcome to Nextra
+
+## Installation 
+
+```shell
+ cd ~/git-repos/temp
+ mkdir nextra-docs
+ cd nextra-docs
+ npm i next react react-dom nextra nextra-theme-docs
+```
+
+Add the following scripts in package.json:
+
+
+
+```json
+"scripts": {
+  "dev": "next",
+  "build": "next build",
+  "start": "next start"
+},
+```
+
+Create a `next.config.js` file in the root of your project with the following content:
+
+```js
+const withNextra = require('nextra')({
+  theme: 'nextra-theme-docs',
+  themeConfig: './theme.config.jsx'
+})
+ 
+module.exports = withNextra()
+ 
+// If you have other Next.js configurations, you can pass them as the parameter:
+// module.exports = withNextra({ /* other next.js config */ })
+```
+
+Create a `theme.config.jsx` file in the root of your project with the following content:
+
+```jsx
+export default {
+    logo: <span>My Nextra Documentation</span>,
+    project: {
+      link: 'https://github.com/bbmorten/nextra-docs'
+    }
+    // ... other theme options
+  }
+```
+
+Create a `pages` directory in the root of your project and add an `index.mdx` file with the following content:
+
+```mdx
+# Welcome to Nextra
+ 
+Hello, world!
+```
+
+Run the following command to start the development server:
+
+```shell
+npm run dev
+```
+
