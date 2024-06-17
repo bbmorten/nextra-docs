@@ -1,7 +1,6 @@
 # Welcome the Docs Tools Site
 
-This project uses several documentation tools to enhance the development and maintenance of its documentation. Below a getting started guide is given as a nextra site. There are brief overviews of each tool on the site that you'll see after running it. 
-
+This project uses several documentation tools to enhance the development and maintenance of its documentation. Below a getting started guide is given as a nextra site. There are brief overviews of each tool on the site that you'll see after running it.
 
 ##  Getting started
 
