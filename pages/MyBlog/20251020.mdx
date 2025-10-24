@@ -1,0 +1,62 @@
+# 2025-10-20
+
+##  Next.js learning
+
+### Reorganized projects
+
+
+/Users/bulent/git-msp/javascript 
+
+This folder includes samples applications for javascript language. 
+
+- Use copilot to create a new project.
+- tasks.json starts the web server automatically. 
+
+/Users/bulent/git-msp/javascript/.github/instructions/new-project.instructions.md
+/Users/bulent/git-msp/javascript/.vscode/tasks.json
+
+
+### Project Notes
+
+#### Project: [nextra-docs](/Users/bulent/git-msp/nextra-docs)
+
+- No content
+
+#### Project: [nextjs-f-v2](docs/nextjs-f-v2.mdx)
+
+- Located at /Users/bulent/git-msp/nextjs-f-v2
+- This project is for learning next.js features and functionalities.
+
+#### Project: [javascript](/Users/bulent/git-msp/javascript)
+
+
+**DOM: createTextNode and createElement**
+
+A compact reference and examples for creating DOM nodes programmatically.
+
+- document.createElement(tagName): creates an element node (div, span, button, etc.).
+- document.createTextNode(text): creates a text node. Useful when you need a node that contains only text (and want to avoid parsing HTML).
+- element.textContent = '...': simpler alternative for adding plain text to an element.
+- innerHTML: parses HTML (use carefully — XSS risk).
+
+When to use which:
+- Use createElement when you need to build element structure or attach attributes/events.
+- Use textContent or createTextNode for inserting plain text. textContent is usually simpler.
+- Use innerHTML only when you intentionally need HTML parsing.
+
+Examples
+
+Basic element + text node:
+
+**Developer Tools**
+
+- Use DOM tree and "Scroll into view"
+
+![scrollintoview](/assets/images/scrollintoview.png)
+
+- $0
+
+![$0.textContent](/assets/images/$0.png)
+
+
+
