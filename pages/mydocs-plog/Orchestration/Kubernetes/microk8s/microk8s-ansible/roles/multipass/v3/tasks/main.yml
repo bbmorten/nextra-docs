@@ -1,0 +1,40 @@
+- name: Check if Multipass VMs already exist
+  shell: multipass info {{ item.name }}
+  register: vm_check
+  ignore_errors: true
+  with_items: "{{ multipass_instances }}"
+
+- name: Launch Multipass VMs if not present
+  shell: >
+    multipass launch --name {{ item.item.name }} --cpus {{ item.item.cpus }} --memory {{ item.item.memory }} --disk {{ item.item.disk }} --network en0:bridge
+  when: item.rc != 0
+  with_items: "{{ vm_check.results }}"
+
+- name: Generate SSH key pair if not exists
+  shell: |
+    if [ ! -f ~/.ssh/id_rsa ]; then
+      ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -q -N ""
+    fi
+
+- name: Get IP addresses of VMs
+  shell: "multipass info {{ item.name }} | grep IPv4 | awk '{print $2}'"
+  register: vm_ips
+  with_items: "{{ multipass_instances }}"
+
+- name: Add IP addresses to inventory dynamically
+  add_host:
+    name: "{{ item.item.name }}"
+    ansible_host: "{{ item.stdout }}"
+    ansible_user: ubuntu
+  with_items: "{{ vm_ips.results }}"
+
+
+- name: Exchange SSH keys between nodes
+  shell: |
+    PUB_KEY=$(cat ~/.ssh/id_rsa.pub)
+    multipass exec {{ item.name }} -- bash -c 'echo "$PUB_KEY" >> ~/.ssh/authorized_keys'
+  with_items: "{{ multipass_instances }}"
+
+- name: Copy SSH key to Multipass VMs
+  shell: "multipass exec {{ item.item.name }} -- bash -c 'mkdir -p ~/.ssh && echo {{ lookup('file', '~/.ssh/id_rsa.pub') }} >> ~/.ssh/authorized_keys'"
+  with_items: "{{ vm_ips.results }}"

@@ -1,0 +1,26 @@
+- name: Launch Multipass VMs
+  shell: >
+    multipass launch --name {{ item.name }} --cpus {{ item.cpus }} --mem {{ item.memory }} --disk {{ item.disk }} 
+  with_items: "{{ multipass_instances }}"
+
+- name: Generate SSH key pair if not exists
+  shell: |
+    if [ ! -f ~/.ssh/id_rsa ]; then
+      ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -q -N ""
+    fi
+
+- name: Get IP addresses of VMs
+  shell: "multipass info {{ item.name }} | grep IPv4 | awk '{print $2}'"
+  register: vm_ips
+  with_items: "{{ multipass_instances }}"
+
+- name: Add IP addresses to inventory dynamically
+  add_host:
+    name: "{{ item.item.name }}"
+    ansible_host: "{{ item.stdout }}"
+    ansible_user: ubuntu
+  with_items: "{{ vm_ips.results }}"
+
+- name: Copy SSH key to Multipass VMs
+  shell: "multipass exec {{ item.item.name }} -- bash -c 'mkdir -p ~/.ssh && echo {{ lookup('file', '~/.ssh/id_rsa.pub') }} >> ~/.ssh/authorized_keys'"
+  with_items: "{{ vm_ips.results }}"

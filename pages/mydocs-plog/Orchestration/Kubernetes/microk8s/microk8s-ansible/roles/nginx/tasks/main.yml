@@ -1,0 +1,4 @@
+- name: Deploy NGINX service
+  shell: |
+    microk8s kubectl create deployment nginx --image=nginx
+    microk8s kubectl scale deployment nginx --replicas=3

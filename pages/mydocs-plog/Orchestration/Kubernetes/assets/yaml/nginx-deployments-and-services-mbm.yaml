@@ -1,0 +1,141 @@
+# Root Nginx Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-root
+  namespace: mbm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-root
+  template:
+    metadata:
+      labels:
+        app: nginx-root
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config-root
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-root-service
+  namespace: mbm
+spec:
+  selector:
+    app: nginx-root
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+# App1 Nginx Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-app1
+  namespace: mbm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-app1
+  template:
+    metadata:
+      labels:
+        app: nginx-app1
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-app1-service
+  namespace: mbm
+spec:
+  selector:
+    app: nginx-app1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+# App2 Nginx Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-app2
+  namespace: mbm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-app2
+  template:
+    metadata:
+      labels:
+        app: nginx-app2
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-app2-service
+  namespace: mbm
+spec:
+  selector:
+    app: nginx-app2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

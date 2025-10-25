@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config-root
+  namespace: mbm
+data:
+  nginx.conf: |
+    worker_processes  1;
+
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        server {
+            listen 80;
+            server_name localhost;
+
+            location / {
+                default_type text/plain;
+                return 200 "Welcome from \$hostname\nIP: \$remote_addr\nTimestamp: \$time_local\n";
+            }
+        }
+    }
+

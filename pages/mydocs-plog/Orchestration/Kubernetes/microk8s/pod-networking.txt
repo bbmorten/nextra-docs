@@ -1,0 +1,143 @@
+ubuntu@vm1:~$ #!/bin/bash
+
+# Get the list of pod names
+PODS=$(kubectl get pods --no-headers -o custom-columns=":metadata.name")
+
+# Iterate over each pod and execute the commands
+for POD in $PODS; do
+  echo "Executing on pod: $POD"
+  echo "------------------------------"
+
+  # Get the node where the pod is running
+  NODE_NAME=$(kubectl get pod "$POD" -o jsonpath='{.spec.nodeName}')
+
+  # Get the container ID using kubectl for accurate mapping
+  CONTAINER_ID=$(kubectl get pod "$POD" -o jsonpath='{.status.containerStatuses[0].containerID}' | cut -d'/' -f3)
+
+  if [ -z "$CONTAINER_ID" ]; then
+    echo "No container ID found for pod: $POD. Skipping."
+    echo "------------------------------"
+    echo
+    continue
+  fi
+
+  # If the pod is on the current node
+  if [ "$NODE_NAME" == "$(hostname)" ]; then
+    HOST_PID=$(sudo microk8s.ctr --namespace k8s.io containers info "$CONTAINER_ID" | jq -r '.Spec.linux.namespaces[] | select(.type == "ipc") | .path' | awk -F'/' '{print $3}')
+  else
+    # If the pod is on a remote node, use SSH
+    HOST_PID=$(ssh "$NODE_NAME" "sudo microk8s.ctr --namespace k8s.io containers info $CONTAINER_ID | jq -r '.Spec.linux.namespaces[] | select(.type == \"ipc\") | .path' | awk -F'/' '{print \$3}'")
+  fi
+
+  echo "Container ID: $CONTAINER_ID"
+  echo "Host PID: $HOST_PID"
+
+  # Check if PID is found
+  if [ -n "$HOST_PID" ]; then
+    echo "Inspecting network for pod: $POD (PID: $HOST_PID)"
+    if [ "$NODE_NAME" == "$(hostname)" ]; then
+      sudo nsenter -t "$HOST_PID" -n ip addr
+      sudo nsenter -t "$HOST_PID" -n ip link
+    else
+      ssh "$NODE_NAME" "sudo nsenter -t $HOST_PID -n ip addr"
+      ssh "$NODE_NAME" "sudo nsenter -t $HOST_PID -n ip link"
+    fi
+  else
+    echo "Unable to retrieve Host PID for pod: $POD"
+  fi
+
+  echo "------------------------------"
+  echo
+done
+
+Executing on pod: netshoot
+------------------------------
+Container ID: aeaae52de3f326e6909d37a74d181a6b059a2c6f9c0a8e7d3d7b3844c514fdbf
+Host PID: 115590
+Inspecting network for pod: netshoot (PID: 115590)
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+3: eth0@if28: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default
+    link/ether 52:f4:c3:59:26:90 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.1.225.23/32 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::50f4:c3ff:fe59:2690/64 scope link
+       valid_lft forever preferred_lft forever
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+3: eth0@if28: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP mode DEFAULT group default
+    link/ether 52:f4:c3:59:26:90 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+------------------------------
+
+Executing on pod: nginx-676b6c5bbc-4w4q6
+------------------------------
+Container ID: 083b2af14ede8a514e51863f21a5a893de1564bd191b1dd4fd4e89685a030405
+Host PID: 103659
+Inspecting network for pod: nginx-676b6c5bbc-4w4q6 (PID: 103659)
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+3: eth0@if10: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default
+    link/ether 42:b1:8d:5e:31:a8 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.1.185.193/32 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::40b1:8dff:fe5e:31a8/64 scope link
+       valid_lft forever preferred_lft forever
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+3: eth0@if10: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP mode DEFAULT group default
+    link/ether 42:b1:8d:5e:31:a8 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+------------------------------
+
+Executing on pod: nginx-676b6c5bbc-bpwjg
+------------------------------
+Container ID: 8dad8535effe56ee34b6178d88f7c1d357725a0c11a921321db21eb985b83d69
+Host PID: 103658
+Inspecting network for pod: nginx-676b6c5bbc-bpwjg (PID: 103658)
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+3: eth0@if11: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default
+    link/ether da:6b:25:5a:d5:7b brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.1.185.194/32 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::d86b:25ff:fe5a:d57b/64 scope link
+       valid_lft forever preferred_lft forever
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+3: eth0@if11: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP mode DEFAULT group default
+    link/ether da:6b:25:5a:d5:7b brd ff:ff:ff:ff:ff:ff link-netnsid 0
+------------------------------
+
+Executing on pod: nginx-676b6c5bbc-pf4tt
+------------------------------
+Container ID: 4e3df1cb5583ced985b807285e3576ad91cba690320ecac710caa54d5338b8cf
+Host PID: 58744
+Inspecting network for pod: nginx-676b6c5bbc-pf4tt (PID: 58744)
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+3: eth0@if14: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default
+    link/ether b6:79:02:96:3c:2c brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.1.225.9/32 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::b479:2ff:fe96:3c2c/64 scope link
+       valid_lft forever preferred_lft forever
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+3: eth0@if14: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP mode DEFAULT group default
+    link/ether b6:79:02:96:3c:2c brd ff:ff:ff:ff:ff:ff link-netnsid 0
+------------------------------

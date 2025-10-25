@@ -1,0 +1,40 @@
+ubuntu@vm2:~$ ip link list
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: enp0s1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:70:76:14 brd ff:ff:ff:ff:ff:ff
+5: vxlan.calico: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UNKNOWN mode DEFAULT group default
+    link/ether 66:52:76:d0:85:21 brd ff:ff:ff:ff:ff:ff
+10: caliad45b8f674b@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP mode DEFAULT group default
+    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-d11acfbd-daa5-eb22-eebf-66887aea3ba9
+11: cali4ca3b8c3ef5@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP mode DEFAULT group default
+    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-fa4d8e91-ae28-e98c-30cf-ea26628872f5
+ubuntu@vm2:~$ ip addr list
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host noprefixroute
+       valid_lft forever preferred_lft forever
+2: enp0s1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 52:54:00:70:76:14 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.206.5/24 metric 100 brd 192.168.206.255 scope global dynamic enp0s1
+       valid_lft 3505sec preferred_lft 3505sec
+    inet6 fdb1:c939:e4d6:638c:5054:ff:fe70:7614/64 scope global dynamic mngtmpaddr noprefixroute
+       valid_lft 2591992sec preferred_lft 604792sec
+    inet6 fe80::5054:ff:fe70:7614/64 scope link
+       valid_lft forever preferred_lft forever
+5: vxlan.calico: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UNKNOWN group default
+    link/ether 66:52:76:d0:85:21 brd ff:ff:ff:ff:ff:ff
+    inet 10.1.185.192/32 scope global vxlan.calico
+       valid_lft forever preferred_lft forever
+    inet6 fe80::6452:76ff:fed0:8521/64 scope link
+       valid_lft forever preferred_lft forever
+10: caliad45b8f674b@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default
+    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-d11acfbd-daa5-eb22-eebf-66887aea3ba9
+    inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+       valid_lft forever preferred_lft forever
+11: cali4ca3b8c3ef5@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default
+    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-fa4d8e91-ae28-e98c-30cf-ea26628872f5
+    inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+       valid_lft forever preferred_lft forever

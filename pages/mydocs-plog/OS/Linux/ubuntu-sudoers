@@ -1,0 +1,39 @@
+#  Passwordless Sudo
+
+Kubernetes cluster installation ansible script has worked with the alternative solution
+
+To stop Ubuntu from asking for a sudo password, you need to configure passwordless sudo. This is done by modifying the sudoers file. Here’s how:
+
+1. **Open the sudoers File Safely**  
+   Always use the `visudo` command to edit the sudoers file to avoid syntax errors. Run:
+
+   ```bash
+   sudo visudo
+   ```
+
+2. **Add a Passwordless Sudo Entry**  
+   Locate the section where user privileges are defined, and add a line for your user. For example, if your username is `your_username`, add:
+
+   ```plaintext
+   your_username ALL=(ALL) NOPASSWD: ALL
+   ```
+
+   This line allows `your_username` to run all commands as any user without being prompted for a password.
+
+3. **Save and Exit**  
+   If you're using nano as the editor (the default on many systems), press `Ctrl+X`, then `Y`, and hit `Enter` to save your changes.
+
+4. **Alternative: Use the /etc/sudoers.d/ Directory**  
+   Instead of modifying the main sudoers file, you can create a dedicated file:
+
+   ```bash
+   sudo nano /etc/sudoers.d/your_username
+   ```
+
+   Add the same line:
+
+   ```plaintext
+   your_username ALL=(ALL) NOPASSWD: ALL
+   ```
+
+   Save and exit. This method helps keep your customizations organized and avoids potential issues when updating the main sudoers file.

@@ -1,0 +1,66 @@
+- name: Check if Multipass VMs already exist
+  shell: multipass info {{ item.name }}
+  register: vm_check
+  ignore_errors: true
+  with_items: "{{ multipass_instances }}"
+
+- name: Launch Multipass VMs if not present
+  shell: >
+    multipass launch --name {{ item.item.name }} --cpus {{ item.item.cpus }} --memory {{ item.item.memory }} --disk {{ item.item.disk }}
+  when: item.rc != 0
+  with_items: "{{ vm_check.results }}"
+
+- name: Get IP addresses of VMs
+  shell: "multipass info {{ item.name }} | grep IPv4 | awk '{print $2}'"
+  register: vm_ips
+  with_items: "{{ multipass_instances }}"
+
+
+- name: Add IP addresses to inventory dynamically
+  add_host:
+    name: "{{ item.item.name }}"
+    ansible_host: "{{ item.stdout }}"
+    ansible_user: ubuntu
+  with_items: "{{ vm_ips.results }}"
+
+- name: Set fact for VM IPs
+  set_fact:
+    vm_ips_dict: "{{ dict(multipass_instances | map(attribute='name') | zip(vm_ips.results | map(attribute='stdout'))) }}"
+
+
+- name: Add master's IP to worker's /etc/hosts
+  shell: >-
+    multipass exec worker -- bash -c "echo '{{ vm_ips_dict.master }} master' | sudo tee -a /etc/hosts"
+
+- name: Add worker's IP to master's /etc/hosts
+  shell: >-
+    multipass exec master -- bash -c "echo '{{ vm_ips_dict.worker }} worker' | sudo tee -a /etc/hosts"
+
+- name: Generate SSH key pair on control machine if not exists
+  shell: |
+    if [ ! -f ~/.ssh/id_rsa ]; then
+      ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -q -N ""
+    fi
+
+- name: Copy SSH key to Multipass VMs
+  shell: |
+    multipass exec {{ item.name }} -- bash -c 'mkdir -p ~/.ssh && echo "{{ lookup("file", "~/.ssh/id_rsa.pub") }}" >> ~/.ssh/authorized_keys'
+  with_items: "{{ multipass_instances }}"
+
+
+- name: Generate 4096-bit SSH key pair on master and worker
+  shell: |
+    multipass exec {{ item.name }} -- bash -c 'if [ ! -f /home/ubuntu/.ssh/id_rsa ]; then ssh-keygen -t rsa -b 4096 -f /home/ubuntu/.ssh/id_rsa -q -N ""; fi'
+  with_items: "{{ multipass_instances }}"
+
+
+
+- name: Add master's public key to worker's authorized_keys
+  shell: |
+    MASTER_PUB_KEY=$(multipass exec master -- bash -c 'cat /home/ubuntu/.ssh/id_rsa.pub')
+    multipass exec worker -- bash -c 'echo "$MASTER_PUB_KEY" >> /home/ubuntu/.ssh/authorized_keys'
+
+- name: Add worker's public key to master's authorized_keys
+  shell: |
+    WORKER_PUB_KEY=$(multipass exec worker -- bash -c 'cat /home/ubuntu/.ssh/id_rsa.pub')
+    multipass exec master -- bash -c 'echo "$WORKER_PUB_KEY" >> /home/ubuntu/.ssh/authorized_keys'

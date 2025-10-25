@@ -7,7 +7,7 @@
     "react-dom": "^18.3.1"
   },
   "scripts": {
-    "dev": "next",
+    "dev": "next -p 3999",
     "build": "next build",
     "start": "next start"
   },

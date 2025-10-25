@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CodeMirror Example</title>
+  <!-- Include CodeMirror CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+
+  <!-- Include required CodeMirror scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/markdown/markdown.min.js"></script>
+
+  <!-- Include the CodeMirror theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/dracula.min.css">
+</head>
+<body>
+  <h1>CodeMirror Example</h1>
+
+  <!-- HTML element to display CodeMirror editor -->
+  <textarea id="code-editor">const greeting = "Hello, world!"; console.log(greeting);</textarea>
+
+  <!-- Button to execute the code -->
+  <button onclick="runCode()">Run Code</button>
+
+  <!-- Display the output of the code -->
+  <h3>Output:</h3>
+  <pre id="output"></pre>
+
+  <script>
+    // Function to run the Node.js code
+    function runCode() {
+      // Get the code from the CodeMirror editor
+      const code = editor.getValue();
+
+      // Clear the previous output
+      document.getElementById('output').innerText = '';
+
+      // Try to run the code using eval (use a safer method for production)
+      try {
+        const result = eval(code);
+        document.getElementById('output').innerText = String(result);
+      } catch (error) {
+        document.getElementById('output').innerText = 'Error: ' + error.message;
+      }
+    }
+
+    // Initialize CodeMirror
+    const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+      mode: 'javascript', // Set the mode to JavaScript for syntax highlighting
+      theme: 'dracula', // Set the CodeMirror theme
+      lineNumbers: true, // Display line numbers
+      // Add more options as needed
+    });
+
+    // Set the initial content of the editor (JavaScript code) - You can also set it to a Markdown text
+    const initialCode = 'const greeting = "Hello, world!"; console.log(greeting);';
+    editor.setValue(initialCode);
+  </script>
+</body>
+</html>

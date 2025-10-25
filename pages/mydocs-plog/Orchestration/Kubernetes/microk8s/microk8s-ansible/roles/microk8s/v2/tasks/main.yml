@@ -1,0 +1,52 @@
+- name: Add master IP to worker's /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ hostvars['master'].ansible_host }} master"
+    state: present
+  when: inventory_hostname == 'worker'
+  become: true
+
+- name: Add worker IP to master's /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ hostvars['worker'].ansible_host }} worker"
+    state: present
+  when: inventory_hostname == 'master'
+  become: true
+
+- name: Create .kube directory
+  shell: mkdir -p ~/.kube
+  when: inventory_hostname == 'master'
+
+
+- name: Change ownership of .kube directory
+  shell: sudo chown -R ubuntu ~/.kube
+  when: inventory_hostname == 'master'
+
+
+- name: Add user to microk8s group
+  shell: sudo usermod -a -G microk8s {{ ansible_user }}
+  when: inventory_hostname == 'master'
+
+
+
+- name: Install MicroK8s
+  shell: sudo snap install microk8s --classic
+
+- name: Enable necessary MicroK8s addons
+  shell: sudo microk8s enable dns storage dashboard
+  when: inventory_hostname == 'master'
+
+
+- name: Alias microk8s.kubectl to kubectl
+  shell: sudo snap alias microk8s.kubectl kubectl
+  when: inventory_hostname == 'master'
+
+
+- name: Join worker node to master
+  when: inventory_hostname == 'worker'
+  shell: |
+    MASTER_IP={{ hostvars['master'].ansible_host }}
+    JOIN_CMD=$(ssh ubuntu@${MASTER_IP} 'sudo microk8s add-node' | grep 'microk8s join' | head -n 1)
+    eval $JOIN_CMD --worker
+  become: true

@@ -1,0 +1,36 @@
+- name: Update and upgrade packages
+  shell: sudo apt update && sudo apt -y upgrade
+
+- name: Reboot the system
+  reboot:
+    msg: "Reboot initiated by Ansible for package updates"
+    connect_timeout: 5
+    reboot_timeout: 600
+
+- name: Create .kube directory
+  shell: mkdir -p ~/.kube
+
+- name: Change ownership of .kube directory
+  shell: sudo chown -R ubuntu ~/.kube
+
+- name: Install MicroK8s
+  shell: sudo snap install microk8s --classic
+
+- name: Add user to microk8s group
+  shell: sudo usermod -a -G microk8s {{ ansible_user }}
+
+- name: Apply new group membership
+  shell: newgrp microk8s
+
+- name: Enable necessary MicroK8s addons
+  shell: sudo microk8s enable dns storage dashboard
+
+- name: Alias microk8s.kubectl to kubectl
+  shell: sudo snap alias microk8s.kubectl kubectl
+
+- name: Join worker node to master
+  when: inventory_hostname == 'worker'
+  shell: |
+    MASTER_IP=$(getent hosts master | awk '{ print $1 }')
+    JOIN_CMD=$(ssh ubuntu@${MASTER_IP} 'sudo microk8s add-node' | grep 'microk8s join' | head -n 1)
+    eval $JOIN_CMD

@@ -1,0 +1,101 @@
+# 2025-10-25
+
+
+## 04. Network Policy (LFS146)
+
+
+```shell
+kubectl create -f https://raw.githubusercontent.com/cilium/cilium/HEAD/examples/minikube/http-sw-app.yaml
+```
+
+
+```shell
+kubectl get pods,svc
+```
+
+### [Cloud Provider Kind](https://github.com/kubernetes-sigs/cloud-provider-kind)
+
+KIND has demonstrated to be a very versatile, efficient, cheap and very useful tool for Kubernetes testing. 
+However, KIND doesn't offer capabilities for testing all the features that depend on cloud-providers, specifically the Load Balancers, causing a gap on testing and a bad user experience, 
+since is not easy to connect to the applications running on the cluster.
+
+
+
+```shell
+brew install cloud-provider-kind
+```
+
+Open a new terminal and run:
+
+```shell
+sudo cloud-provider-kind
+
+```
+
+Creating a service and exposing it via a LoadBalancer:
+
+```shell
+cat > my-local-app.yaml << EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: policy-local
+  labels:
+    app: MyLocalApp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: MyLocalApp
+  template:
+    metadata:
+      labels:
+        app: MyLocalApp
+    spec:
+      containers:
+        - name: agnhost
+          image: registry.k8s.io/e2e-test-images/agnhost:2.40
+          args:
+            - netexec
+            - --http-port=8080
+            - --udp-port=8080
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-service-local
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  selector:
+    app: MyLocalApp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+EOF
+```
+
+
+
+##  Next.js learning
+
+### Reorganized projects
+
+
+
+
+### Project Notes
+
+#### Project: [nextra-docs](/Users/bulent/git-msp/nextra-docs)
+
+- No content
+
+#### Project: [nextjs-f-v2](docs/nextjs-f-v2.mdx)
+
+
+
+#### Project: [javascript](/Users/bulent/git-msp/javascript)
+
