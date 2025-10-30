@@ -1,0 +1,46 @@
+<div style={{backgroundColor: "#1E90FF", padding: "1rem", borderRadius: "8px", marginBottom: "1rem"}}>
+  <h2 style={{color: "white", margin: 0}}>NetworkPolicy vs. CiliumNetworkPolicy</h2>
+</div>
+
+<table style={{width: "100%", borderCollapse: "collapse"}}>
+  <thead>
+    <tr>
+      <th style={{background: "#90ee90"}}>Feature</th>
+      <th style={{background: "#ffd700"}}>NetworkPolicy</th>
+      <th style={{background: "#ff69b4"}}>CiliumNetworkPolicy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style={{background: "#e0ffff"}}>Layer support</td>
+      <td style={{background: "#ffffe0"}}>L3/L4 (IP/Port)</td>
+      <td style={{background: "#fff0f5"}}>L3/L4/L7 (includes HTTP, DNS, Kafka, gRPC)</td>
+    </tr>
+    <tr>
+      <td style={{background: "#e0ffff"}}>Protocol-based rules</td>
+      <td style={{background: "#ffffe0"}}>Ingress/Egress only by IP and port</td>
+      <td style={{background: "#fff0f5"}}>Ingress/Egress by HTTP path, DNS name, Kafka topic, gRPC method</td>
+    </tr>
+    <tr>
+      <td style={{background: "#e0ffff"}}>Service name-based policies</td>
+      <td style={{background: "#ffffe0"}}>Not Supported</td>
+      <td style={{background: "#fff0f5"}}>Supported for internal cluster comms</td>
+    </tr>
+    <tr>
+      <td style={{background: "#e0ffff"}}>Entity/DNS matching</td>
+      <td style={{background: "#ffffe0"}}>No</td>
+      <td style={{background: "#fff0f5"}}>Yes (special entities, DNS FQDN matching)</td>
+    </tr>
+    <tr>
+      <td style={{background: "#e0ffff"}}>Visual policy editor available</td>
+      <td style={{background: "#ffffe0"}}>Limited</td>
+      <td style={{background: "#fff0f5"}}>Yes, with networkpolicy.io</td>
+    </tr>
+  </tbody>
+</table>
+
+<div style={{backgroundColor: "#32CD32", padding: "1rem", borderRadius: "8px", marginTop: "1rem"}}>
+  <p style={{color: "white", margin: 0}}>
+    <b>Summary:</b> CiliumNetworkPolicy extends NetworkPolicy with advanced L7 features, protocol support, and more flexible entity and DNS-based rules.
+  </p>
+</div>
