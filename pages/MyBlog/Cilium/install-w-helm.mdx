@@ -1,0 +1,99 @@
+# Installing and upgrading Cilium with Helm
+
+
+```shell
+cilium uninstall
+helm install cilium cilium/cilium --version 1.18.4 --namespace kube-system
+```
+
+To upgrade that Cilium Helm release from `1.16.3` to `1.18.4`, you don’t reinstall, you **helm upgrade** the existing release.
+
+Assuming:
+
+- Release name: `cilium`
+- Namespace: `kube-system`
+- Chart repo: `cilium/cilium`
+- Target version: `1.18.4`
+
+### 1. Check current release
+
+```bash
+helm list -n kube-system | grep cilium
+helm get values cilium -n kube-system -o yaml > cilium-values-backup.yaml
+```
+
+That backup lets you reuse/customize your current settings.
+
+### 2. Make sure the repo is up to date
+
+```bash
+helm repo update
+```
+
+(Optional sanity check:)
+
+```bash
+helm search repo cilium/cilium --versions | head
+```
+
+Confirm you see `1.18.4` in the list.
+
+### 3. Dry‑run the upgrade (recommended)
+
+If you’re not using any extra values:
+
+```bash
+helm upgrade cilium cilium/cilium \
+  --namespace kube-system \
+  --version 1.18.4 \
+  --dry-run --debug
+```
+
+If you have custom values:
+
+```bash
+helm upgrade cilium cilium/cilium \
+  --namespace kube-system \
+  --version 1.18.4 \
+  -f cilium-values-backup.yaml \
+  --dry-run --debug
+```
+
+Fix any errors shown here before doing the real upgrade.
+
+### 4. Perform the actual upgrade
+
+Without custom values:
+
+```bash
+helm upgrade cilium cilium/cilium \
+  --namespace kube-system \
+  --version 1.18.4
+```
+
+With custom values:
+
+```bash
+helm upgrade cilium cilium/cilium \
+  --namespace kube-system \
+  --version 1.18.4 \
+  -f cilium-values-backup.yaml
+```
+
+### 5. Verify Cilium health
+
+```bash
+kubectl -n kube-system get pods -l k8s-app=cilium
+kubectl -n kube-system get pods -l name=cilium-operator
+cilium status --wait
+```
+
+If `cilium status` isn’t available on your client, you can also check:
+
+```bash
+kubectl -n kube-system get ds cilium
+kubectl -n kube-system describe ds cilium
+kubectl -n kube-system logs -l k8s-app=cilium --tail=50
+```
+
+If you tell me whether you used any special flags/values in the original install (for example `--set tunnel=disabled`, `--set ipam.mode=kubernetes`, etc.), I can give you an exact `helm upgrade` command that preserves them.

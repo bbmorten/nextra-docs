@@ -1,0 +1,69 @@
+# Clearing TCP Port 3999 on macOS
+
+To clear everything bound to TCP port 3999 on macOS safely, do it in two phases: identify, then terminate (graceful first, force only if needed).
+
+List processes using the port:
+```bash
+lsof -nP -iTCP:3999 | grep LISTEN
+```
+
+Just get PIDs:
+```bash
+lsof -tiTCP:3999
+```
+
+Gracefully kill (SIGTERM):
+```bash
+lsof -tiTCP:3999 | xargs -r kill
+```
+
+Force kill only if some are still there after a few seconds:
+```bash
+lsof -tiTCP:3999 | xargs -r kill -9
+```
+
+One-liner (immediate force – use only if you don’t care about cleanup):
+```bash
+lsof -tiTCP:3999 | xargs -r kill -9
+```
+
+If you want a reusable function, add to your `~/.zshrc`:
+```bash
+killport() {
+  local port="$1"
+  [ -z "$port" ] && { echo "Usage: killport <port>"; return 1; }
+  local pids
+  pids=$(lsof -tiTCP:"$port")
+  [ -z "$pids" ] && { echo "No processes listening on TCP $port"; return 0; }
+  echo "Sending SIGTERM to: $pids"
+  kill $pids
+  sleep 2
+  local still
+  still=$(lsof -tiTCP:"$port")
+  if [ -n "$still" ]; then
+    echo "Still alive, forcing: $still"
+    kill -9 $still
+  else
+    echo "Port $port freed."
+  fi
+}
+```
+Reload shell:
+```bash
+source ~/.zshrc
+```
+Use:
+```bash
+killport 3999
+```
+
+Alternative using `netstat` (older systems):
+```bash
+netstat -anv | grep 3999
+```
+
+You’re done when this returns nothing:
+```bash
+lsof -iTCP:3999 | grep LISTEN
+```
+
