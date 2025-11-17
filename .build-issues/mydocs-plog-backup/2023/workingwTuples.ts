@@ -19,7 +19,7 @@ const { nameX, last, age, gender } = objArray1;
 console.log(nameX, last, age, gender)
 
 
-const { anotherName = nameX, anotherAge = age } = objArray1;
+const { nameX: anotherName, age: anotherAge } = objArray1;
 
 console.log(anotherName); // Stefan
 console.log(anotherAge); // 40

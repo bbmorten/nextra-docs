@@ -4,12 +4,14 @@
     "nextra": "^2.13.4",
     "nextra-theme-docs": "^2.13.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "rxjs": "^7.8.2",
+    "sharp": "^0.34.5"
   },
   "scripts": {
     "dev": "next -p 3999 -H 0.0.0.0",
     "build": "next build",
-    "start": "next start"
+    "start": "next start -p 3999 -H 0.0.0.0"
   },
   "devDependencies": {
     "@types/node": "20.14.2",
